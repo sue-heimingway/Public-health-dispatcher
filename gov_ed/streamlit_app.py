@@ -1,16 +1,3 @@
-import streamlit as st
-
-# 极其霸道的隐藏顶部工具栏代码
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            header {visibility: hidden;}
-            footer {visibility: hidden;}
-            .stDeployButton {display:none;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
-
 """民声先知 · 词元引擎 —— Streamlit 界面（工作台 + 值班处置台）。
 
 侧边栏切换两个页面，共用同一个持久化 Store（data/state.json），
@@ -75,6 +62,10 @@ def _inject_style() -> None:
         [data-testid="stTextInput"] input,
         [data-testid="stTextArea"] textarea { border-radius: 9px; }
         h1, h2, h3 { color: #0f172a !important; letter-spacing: -.2px; }
+        #MainMenu { visibility: hidden; }
+        header[data-testid="stHeader"] { visibility: hidden; }
+        footer { visibility: hidden; }
+        [data-testid="stToolbar"] { display: none; }
         </style>
         """,
         unsafe_allow_html=True,
