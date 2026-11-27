@@ -16,7 +16,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import streamlit as st  # noqa: E402
-import streamlit.components.v1 as components  # noqa: E402
 from app import demo_cases  # noqa: E402
 from app.pipeline import Pipeline  # noqa: E402
 from app.store import Store  # noqa: E402
@@ -181,7 +180,6 @@ def render_extra(key: str, e: dict, case: dict) -> None:
 
 # ---------------------------------------------------------------- 渲染：值班处置台
 def render_workbench(store: Store) -> None:
-    _brand_bar(store)
     left, right = st.columns([1, 1.6])
 
     with left:
@@ -339,31 +337,22 @@ def _report(store: Store, case: dict, kind: str, label: str) -> None:
 # ---------------------------------------------------------------- 入口
 store = Store()  # 持久化 Store，与网页版共用 data/state.json
 
-page = st.sidebar.radio("页面", ["诉求工作台", "值班处置台", "市民上报"])
+_brand_bar(store)
 
-with st.sidebar:
-    st.divider()
-    pending = len(store.pending_tickets())
-    st.markdown(f"待处理工单：**{pending}**")
+nav_left, nav_right = st.columns([4, 1])
+with nav_left:
+    page = st.radio("页面", ["诉求工作台", "值班处置台", "市民上报"],
+                    horizontal=True, label_visibility="collapsed")
+with nav_right:
     if st.button("清空全部数据", use_container_width=True):
         store.reset()
         st.rerun()
-    st.divider()
-    embed = st.checkbox("内嵌网页版（像素级一致）", value=False,
-                        help="勾选后用 iframe 直接内嵌 http://127.0.0.1:8780 的网页版页面，需要网页版服务在运行")
-
-if embed:
-    st.info("正在内嵌网页版 http://127.0.0.1:8780 —— 需要网页版服务（run.py）同时在运行。")
-    components.iframe("http://127.0.0.1:8780", height=1500, scrolling=True)
-    st.stop()
 
 if page == "诉求工作台":
     render_workbench(store)
 elif page == "值班处置台":
-    _brand_bar(store)
     st.subheader("🛡️ 值班处置台")
     render_duty(store)
 else:
-    _brand_bar(store)
     st.subheader("📱 市民上报")
     render_report(store)
