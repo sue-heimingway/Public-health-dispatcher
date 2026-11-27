@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>值班处置台 · GovOS</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  :root { color-scheme: dark; }
+  html, body { background: radial-gradient(900px 500px at 10% -10%, #17233a 0%, rgba(23,35,58,0) 60%), #070c16; color: #e6edf7; }
+  .doc { max-width: 1760px; margin: 0 auto; padding-bottom: 30px; }
+  .doc-top { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 16px; padding: 12px 22px; background: rgba(7,12,22,.82); backdrop-filter: blur(14px); border-bottom: 1px solid #1c2740; }
+  .doc-brand { display: flex; align-items: center; gap: 10px; }
+  .doc-brand .m { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: linear-gradient(145deg, #3b82f6, #1e3a8a); font-weight: 800; font-size: 14px; }
+  .doc-brand h1 { margin: 0; font-size: 15px; }
+  .doc-brand span { display: block; font-size: 10.5px; color: #7b8ba6; }
+  .doc-top .sp { flex: 1; }
+  .badge-count { font-family: var(--mono); font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid #2a3a58; color: #9fb0c9; background: #0d1626; }
+  .badge-count.hot { border-color: #7f1d1d; background: #2a0f11; color: #fca5a5; }
+  .doc-grid { display: grid; grid-template-columns: 372px minmax(0,1fr); gap: 14px; padding: 14px 22px 0; align-items: start; }
+  @media (max-width: 1080px) { .doc-grid { grid-template-columns: 1fr; } }
+  .d-card { background: #0c1424; border: 1px solid #1b2742; border-radius: 14px; overflow: hidden; }
+  .d-head { display: flex; align-items: center; gap: 8px; padding: 10px 13px; border-bottom: 1px solid #1b2742; font-size: 11.5px; letter-spacing: .08em; color: #8fa2bf; text-transform: uppercase; font-weight: 700; }
+  .d-head .r { margin-left: auto; font-size: 10.5px; letter-spacing: 0; text-transform: none; color: #64748b; }
+  .d-body { padding: 12px 13px; }
+  .ticket { display: flex; gap: 10px; padding: 10px 11px; border-radius: 10px; border: 1px solid transparent; cursor: pointer; }
+  .ticket:hover { background: #101c31; }
+  .ticket.sel { background: #14213a; border-color: #2a4d85; }
+  .pr { font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 5px; height: fit-content; margin-top: 2px; }
+  .pr.P0 { background: #b91c1c; color: #fff; } .pr.P1 { background: #b45309; color: #fff; } .pr.P2 { background: #1e3a8a; color: #dbeafe; }
+  .ticket .main { flex: 1; min-width: 0; }
+  .ticket .who { font-size: 12.5px; font-weight: 650; }
+  .ticket .why { font-size: 11px; color: #93a4bf; margin-top: 2px; line-height: 1.45; }
+  .ticket .tm { font-family: var(--mono); font-size: 10px; color: #64748b; white-space: nowrap; }
+  .ticket .tm.hot { color: #f87171; }
+  .ticket-empty { padding: 26px 12px; text-align: center; color: #64748b; font-size: 12px; }
+  .doc-case { display: flex; gap: 16px; align-items: center; padding: 14px; }
+  .doc-lv { width: 66px; height: 66px; border-radius: 16px; flex: none; display: grid; place-items: center; font-family: var(--mono); font-size: 34px; font-weight: 750; }
+  .doc-lv.l1 { background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d; }
+  .doc-lv.l2 { background: #431407; color: #fdba74; border: 1px solid #7c2d12; }
+  .doc-lv.l3 { background: #422006; color: #fde68a; border: 1px solid #713f12; }
+  .doc-lv.l4 { background: #172554; color: #bfdbfe; border: 1px solid #1e3a8a; }
+  .doc-case h2 { margin: 0; font-size: 18px; }
+  .doc-case .meta { font-size: 12px; color: #93a4bf; margin-top: 3px; }
+  .doc-case .chief { font-size: 12.5px; color: #cbd5e1; margin-top: 6px; line-height: 1.55; }
+  .ev { font-size: 11.8px; color: #cbd5e1; padding: 5px 9px; border-left: 2px solid #7f1d1d; background: #150d14; border-radius: 0 6px 6px 0; margin-bottom: 5px; line-height: 1.55; }
+  .jury-dark { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: stretch; }
+  .jc { background: #0a111f; border: 1px solid #1b2742; border-radius: 10px; padding: 9px 11px; }
+  .jc .role { font-size: 10.5px; color: #7f90ab; }
+  .jc .lv { font-family: var(--mono); font-size: 16px; font-weight: 700; margin: 1px 0 3px; }
+  .jc .arg { font-size: 10.8px; color: #9fb0c9; line-height: 1.45; }
+  .vs { display: grid; place-items: center; font-size: 10.5px; color: #64748b; }
+  .note { width: 100%; min-height: 62px; background: #0a111f; color: #e6edf7; border: 1px solid #243450; border-radius: 9px; padding: 8px 10px; font-size: 12.5px; resize: vertical; }
+  .note:focus { outline: none; border-color: #3b82f6; }
+  .d-btn { padding: 8px 12px; border-radius: 9px; border: 1px solid #243450; background: #101c31; color: #d6e0ee; font-size: 12.3px; font-weight: 620; cursor: pointer; }
+  .d-btn:hover { border-color: #35507a; background: #142238; }
+  .d-btn.red { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+  .d-btn.green { background: #065f46; border-color: #065f46; color: #ecfdf5; }
+  .audit { width: 100%; border-collapse: collapse; font-size: 11.2px; }
+  .audit th { text-align: left; color: #7f90ab; font-weight: 650; font-size: 10px; padding: 6px 8px; border-bottom: 1px solid #1b2742; }
+  .audit td { padding: 6px 8px; border-bottom: 1px dashed #141f36; color: #9fb0c9; }
+  .audit td.t { font-family: var(--mono); color: #64748b; white-space: nowrap; }
+  .tagk { font-size: 10px; padding: 0 6px; border-radius: 4px; background: #16213a; color: #93c5fd; }
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="doc-top">
+    <div class="doc-brand">
+      <div class="m">G</div>
+      <div><h1>值班处置台</h1><span>HUMAN-IN-THE-LOOP · 人工最终裁决</span></div>
+    </div>
+    <span class="badge-count" id="badge-p0">P0 0</span>
+    <span class="badge-count" id="badge-total">待办 0</span>
+    <div class="sp"></div>
+    <span class="badge-count" id="clock">--:--:--</span>
+    <button class="d-btn" id="btn-sound">🔔 提示音：开</button>
+    <a class="d-btn" href="/" style="text-decoration:none">← 回工作台</a>
+  </div>
+
+  <div class="doc-grid">
+    <div class="d-card">
+      <div class="d-head">待处理工单 <span class="r" id="list-hint">—</span></div>
+      <div class="d-body" id="tickets" style="padding:8px"><div class="ticket-empty">载入中…</div></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="d-card" id="detail">
+        <div class="d-head">工单详情 <span class="r">选择左侧工单</span></div>
+        <div class="d-body" style="padding:26px;text-align:center;color:#64748b">选择一条工单，查看 Agent 判断依据并做最终裁决。</div>
+      </div>
+      <div class="d-card">
+        <div class="d-head">审计日志 <span class="r">每一次人工介入都留痕</span></div>
+        <div class="d-body" style="padding:6px 6px 10px">
+          <table class="audit">
+            <thead><tr><th style="width:86px">时间</th><th style="width:110px">动作</th><th style="width:90px">工单</th><th>说明</th></tr></thead>
+            <tbody id="audit"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+<script>
+(() => {
+  const state = { tickets: [], selected: null, sound: true, seen: new Set(), started: false };
+  startClock($("#clock"));
+  const lvCls = (l) => "l" + (l || 4);
+
+  function renderTickets() {
+    const box = $("#tickets");
+    if (!state.tickets.length) { box.innerHTML = `<div class="ticket-empty">✓ 没有待处理工单</div>`; return; }
+    box.innerHTML = state.tickets.map((t) => `
+      <div class="ticket ${state.selected && state.selected.id === t.id ? "sel" : ""}" data-id="${t.id}">
+        <span class="pr ${t.priority}">${t.priority}</span>
+        <div class="main">
+          <div class="who">${escapeHTML(t.subject)} <span style="font-weight:400;font-size:11px;color:#64748b">${escapeHTML(t.location || "")}</span></div>
+          <div class="why">${escapeHTML(t.reason).slice(0, 52)}</div>
+        </div>
+        <div class="tm ${t.overdue ? "hot" : ""}">${t.overdue ? "超时" : clockOf(t.created_at)}</div>
+      </div>`).join("");
+  }
+
+  function renderDetail(t) {
+    if (!t) { $("#detail").innerHTML = `<div class="d-head">工单详情 <span class="r">未选择</span></div><div class="d-body" style="padding:26px;text-align:center;color:#64748b">左侧选择一条工单。</div>`; return; }
+    const qc = t.qc || {}; const judge = t.judgment || {};
+    $("#detail").innerHTML = `
+      <div class="d-head">工单 ${t.id} <span class="r">${t.priority} · SLA ${t.sla_minutes} 分钟 · 发起：${escapeHTML(t.agent)}</span></div>
+      <div class="doc-case">
+        <div class="doc-lv ${lvCls(t.level)}">${t.level ?? "?"}</div>
+        <div style="min-width:0">
+          <h2>${escapeHTML(t.subject)} <span style="font-size:12px;color:#64748b;font-weight:400">${escapeHTML(t.location || "")} · ${t.case_id}</span></h2>
+          <div class="meta">${escapeHTML(t.reason)}</div>
+          <div class="chief">诉求：${escapeHTML(t.text || "")}</div>
+        </div>
+      </div>
+      <div class="d-body" style="padding-top:0">
+        <div class="d-head" style="padding:8px 0;border:none;color:#8fa2bf">Agent 给的理由</div>
+        ${(t.evidence || []).map((e) => `<div class="ev">${escapeHTML(e)}</div>`).join("")}
+        <div class="d-head" style="padding:10px 0 6px;border:none;color:#8fa2bf">两派意见</div>
+        <div class="jury-dark">
+          <div class="jc"><div class="role">分级裁判 Agent ③</div><div class="lv">${judge.level ?? "—"} 级</div><div class="arg">${escapeHTML(judge.summary || "")}</div></div>
+          <div class="vs">VS</div>
+          <div class="jc"><div class="role">交叉核验 Agent ④</div><div class="lv" style="color:${qc.conflict ? "#f87171" : "#4ade80"}">${qc.final_level ?? "—"} 级</div><div class="arg">${escapeHTML((qc.verdict || "") + "：" + (qc.headline || ""))}</div></div>
+        </div>
+        <div class="d-head" style="padding:14px 0 6px;border:none;color:#8fa2bf">人工裁决</div>
+        <textarea class="note" id="decision-note" placeholder="写下判断依据（进审计日志）"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px">
+          <button class="d-btn green" data-act="agree">同意定级</button>
+          <button class="d-btn red" data-act="upgrade1">升级为一级</button>
+          <button class="d-btn" data-act="upgrade2">升级为二级</button>
+          <button class="d-btn" data-act="downgrade">降级</button>
+          <button class="d-btn" data-act="missing">要求补信息</button>
+          <button class="d-btn" data-act="accept" style="margin-left:auto">接管该事项 →</button>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:#93a4bf">${(t.timeline || []).map((x) => `${x.at} ${escapeHTML(x.text)}`).join("<br>")}</div>
+      </div>`;
+  }
+
+  async function selectTicket(id) {
+    const t = state.tickets.find((x) => x.id === id);
+    if (!t) return;
+    try {
+      const c = await api("/api/case/" + t.case_id);
+      t.judgment = c.judgment || {}; t.qc = c.qc || {}; t.level = c.level;
+      state.selected = t;
+    } catch { state.selected = t; }
+    renderTickets(); renderDetail(state.selected);
+  }
+
+  async function act(action) {
+    const t = state.selected; if (!t) return;
+    const note = ($("#decision-note")?.value || "").trim();
+    if (action === "downgrade" && !note) { toast("降级必须写理由", "err"); return; }
+    const body = { ticket_id: t.id, action, note, duty: "值班人员" };
+    if (action === "upgrade1") body.action = "upgrade1";
+    if (action === "upgrade2") body.action = "upgrade2";
+    if (action === "downgrade") body.level = Math.max(3, (t.level || 4) + 1);
+    try {
+      await api("/api/hitl", { body });
+      toast("已执行", "ok");
+      await refresh(true);
+      renderDetail(state.tickets.find((x) => x.id === t.id) || null);
+    } catch (e) { toast(e.message, "err"); }
+  }
+
+  $("#detail").addEventListener("click", (ev) => { const b = ev.target.closest("[data-act]"); if (b) act(b.dataset.act); });
+
+  async function refresh(silent = false) {
+    try {
+      const s = await api("/api/state");
+      const p0 = s.tickets.filter((t) => t.priority === "P0").length;
+      const overdue = s.tickets.filter((t) => t.overdue).length;
+      $("#badge-p0").textContent = "P0 " + p0;
+      $("#badge-p0").className = "badge-count" + (overdue ? "" : p0 ? " hot" : "");
+      $("#badge-total").textContent = "待办 " + s.tickets.length;
+      $("#list-hint").textContent = overdue ? `${overdue} 条超时` : "实时同步";
+      const newOnes = s.tickets.filter((t) => !state.seen.has(t.id));
+      if (state.started && state.sound && newOnes.length) { beep(Math.min(3, newOnes.length)); newOnes.slice(0, 2).forEach((t) => toast(`${t.priority} 新工单：${t.reason}`, "err")); }
+      s.tickets.forEach((t) => state.seen.add(t.id));
+      state.started = true;
+      state.tickets = s.tickets;
+      if (state.selected && !s.tickets.find((x) => x.id === state.selected.id)) state.selected = null;
+      renderTickets(); if (!silent) renderDetail(state.selected);
+      renderAudit(s.audit || []);
+    } catch { if (!silent) $("#list-hint").textContent = "连接中断"; }
+  }
+
+  function renderAudit(rows) {
+    $("#audit").innerHTML = rows.length ? rows.map((r) => `<tr><td class="t">${escapeHTML((r.at || "").slice(-8))}</td><td><span class="tagk">${escapeHTML(r.action)}</span></td><td class="t">${escapeHTML(r.ticket || "-")}</td><td>${escapeHTML(r.detail || "")}</td></tr>`).join("") : `<tr><td colspan="4" style="text-align:center;color:#64748b;padding:14px">暂无记录</td></tr>`;
+  }
+
+  $("#tickets").addEventListener("click", (ev) => { const it = ev.target.closest(".ticket"); if (it) selectTicket(it.dataset.id); });
+  $("#btn-sound").addEventListener("click", () => { state.sound = !state.sound; $("#btn-sound").textContent = "🔔 提示音：" + (state.sound ? "开" : "关"); if (state.sound) beep(1); });
+
+  refresh();
+  setInterval(() => refresh(true), 2000);
+})();
+</script>
+</body>
+</html>

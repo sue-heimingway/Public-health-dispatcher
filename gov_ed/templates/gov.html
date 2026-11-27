@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GovOS · 社会治理诉求分流中枢</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">G</div>
+    <div>
+      <div class="brand-title">GovOS 诉求分流台</div>
+      <div class="brand-sub">社会治理诉求分流中枢 · 6 Agent</div>
+    </div>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="top-stat"><b>6/6</b><span>AGENT 在线</span></div>
+  <div class="top-stat"><b id="stat-rules">10</b><span>风险规则</span></div>
+  <div class="top-stat"><b id="stat-llm">—</b><span>大模型</span></div>
+  <div class="top-stat alarm"><b id="stat-pending">0</b><span>待值班处理</span></div>
+  <div class="top-stat"><b id="stat-wait">0</b><span>待处置</span></div>
+  <div class="clock" id="clock">--:--:--</div>
+  <a class="btn btn-sm" href="/duty" target="_blank" rel="noopener">值班处置台 ↗</a>
+</header>
+
+<main class="wrap">
+  <div class="col col-left">
+    <section class="card">
+      <div class="card-head"><h2>诉求录入</h2><span class="hint">按市民原话录入</span></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="field"><label>诉求人</label><input type="text" id="f-name" placeholder="王女士"></div>
+          <div class="field"><label>联系电话</label><input type="text" id="f-phone" placeholder="13800000000"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>来源渠道</label>
+            <select id="f-source"><option>12345 热线</option><option>微信</option><option>微博</option><option>抖音</option><option>社区网格</option><option>现场</option></select>
+          </div>
+          <div class="field"><label>涉及人数<span class="tip">可留空</span></label><input type="number" id="f-crowd" min="0" placeholder="1"></div>
+        </div>
+        <div class="field">
+          <label>地址<span class="tip">留空则从诉求文本自动抓取</span></label>
+          <input type="text" id="f-location" placeholder="阳光花园小区 3 栋 201">
+        </div>
+        <div class="field">
+          <label>诉求内容<span class="req">*</span></label>
+          <textarea id="f-text" style="min-height:110px" placeholder="例：我公公八十多了，一个人在家，发烧喘不上气，氧气也用完了，救命"></textarea>
+        </div>
+        <button class="btn btn-primary btn-block" id="btn-intake">接入并跑完 6 个 Agent</button>
+        <div class="small muted" style="margin-top:7px;text-align:center">
+          ① 采集 → ② 排雷 → ③ 定级 → ④ 质控 → ⑤ 追踪 → ⑥ 通报
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>演示诉求</h2><span class="hint" id="case-hint">加载中</span></div>
+      <div class="card-body tight" style="padding-top:8px">
+        <div class="case-list" id="case-list"></div>
+        <div class="btn-row" style="margin-top:9px">
+          <button class="btn btn-sm" id="btn-seed">填充处置队列</button>
+          <button class="btn btn-sm btn-ghost" id="btn-reset">清空全部</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col col-center">
+    <div id="result">
+      <div class="card">
+        <div class="card-head"><h2>待受理</h2><span class="hint">左侧录入或点一个演示诉求</span></div>
+        <div class="card-body" style="padding:26px 22px">
+          <div style="display:flex;gap:26px;flex-wrap:wrap">
+            <div style="flex:1;min-width:250px">
+              <div style="font-size:15px;font-weight:700;margin-bottom:8px">六个 Agent，从急诊分诊平移到社会治理</div>
+              <div class="small muted" style="line-height:1.85">
+                <b style="color:var(--ink-2)">接诊与排雷</b><br>
+                ① 诉求采集：把市民白话翻成诉求类型，自动抓地址/人数/情绪<br>
+                ② 社会风险预警：揪出「漏判会炸锅」的传染病聚集、谣言恐慌、群体苗头<br><br>
+                <b style="color:var(--ink-2)">定级与质控</b><br>
+                ③ 响应分级：一级转 120/110，二级转网信/政法，三级派单，四级自动答复<br>
+                ④ 交叉核验：防误判、防次生舆情，恐慌诉求绝不冷回复<br><br>
+                <b style="color:var(--ink-2)">追踪与沟通</b><br>
+                ⑤ 舆情热点追踪：多人跟帖「我们也这样」→ 自动重新评估并升级<br>
+                ⑥ 通报与安抚：官方、有人情味、不失原则的通报，一键推送
+              </div>
+            </div>
+            <div style="flex:1;min-width:230px">
+              <div class="alert blue"><b>底座 1</b>　政务诉求语义库：40+ 诉求类型 × 情绪/地址/人数抽取</div>
+              <div class="alert blue"><b>底座 2</b>　Human-in-the-loop：高危 / Agent 吵架 / 舆情升级 → 工单呼叫值班人员</div>
+              <div class="alert amber"><b>演示建议</b>　先点「⑤ 恐慌中问医保」看质控怎么把四级冷回复拦成二级温和回应，再点「② 聚集疫情」看一级。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col col-right">
+    <section class="card">
+      <div class="card-head"><h2>处置队列</h2><span class="hint" id="queue-hint">—</span></div>
+      <div class="card-body tight" id="queue"><div class="empty"><span class="big">◷</span>暂无待处置诉求</div></div>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Human-in-the-loop</h2><span class="hint" id="hitl-hint">—</span></div>
+      <div class="card-body tight" id="hitl"><div class="empty"><span class="big">✓</span>没有待处理工单</div></div>
+    </section>
+    <section class="card" id="report-card" hidden>
+      <div class="card-head"><h2>市民上报入口</h2><span class="hint">发给当事人补充反馈</span></div>
+      <div class="card-body">
+        <div class="t" id="rp-name" style="font-size:12px;font-weight:620">—</div>
+        <div class="u" id="rp-url" style="font-family:var(--mono);font-size:10.5px;color:var(--ink-3);word-break:break-all;margin:4px 0 8px">—</div>
+        <div class="btn-row">
+          <button class="btn btn-sm" id="btn-copy">复制链接</button>
+          <button class="btn btn-sm btn-primary" id="btn-open">打开上报页</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="footer">
+  <b>GovOS 演示原型</b> · 仅用于流程演练，不构成真实政务处置依据 · v1.0
+</footer>
+
+<script src="/static/app.js"></script>
+<script>
+(() => {
+  const state = { cases: [], selected: null, lastPending: -1, commsTone: null };
+  const LV = {
+    1: { label: "一级响应", cls: "esi-1", dot: "esi-l1", route: "转 120/110/119 + 属地" },
+    2: { label: "二级响应", cls: "esi-2", dot: "esi-l2", route: "转 宣传部/网信办/政法" },
+    3: { label: "三级响应", cls: "esi-3", dot: "esi-l3", route: "派发责任部门工单" },
+    4: { label: "四级响应", cls: "esi-4", dot: "esi-l4", route: "自动答复闭环" },
+  };
+  const FIELDS = ["name", "phone", "source", "crowd", "location", "text"];
+  startClock($("#clock"));
+
+  function fillForm(p) { FIELDS.forEach((k) => { const el = $("#f-" + k); if (el) el.value = p[k] ?? ""; }); }
+  function readForm() {
+    const p = {};
+    FIELDS.forEach((k) => { const el = $("#f-" + k); if (el) p[k] = el.value.trim(); });
+    return p;
+  }
+
+  async function loadCases() {
+    const data = await api("/api/demo/cases");
+    state.cases = data.cases;
+    $("#case-hint").textContent = data.cases.length + " 例";
+    $("#case-list").innerHTML = data.cases.map((c) => `
+      <div class="case-item" data-key="${c.key}" title="${escapeHTML(c.tag)}">
+        <span>${escapeHTML(c.title)}</span><span class="tag">${escapeHTML(c.tag)}</span>
+      </div>`).join("");
+  }
+
+  $("#case-list").addEventListener("click", async (ev) => {
+    const item = ev.target.closest(".case-item");
+    if (!item) return;
+    const data = await api("/api/demo/cases");
+    const c = data.cases.find((x) => x.key === item.dataset.key);
+    if (!c) return;
+    fillForm(c.payload);
+    toast("已装载：" + c.tag, "ok");
+    $("#btn-intake").click();
+  });
+
+  $("#btn-intake").addEventListener("click", async () => {
+    const payload = readForm();
+    if (!payload.text) { toast("诉求内容不能为空", "err"); return; }
+    const btn = $("#btn-intake"); btn.disabled = true; btn.textContent = "6 个 Agent 正在跑…";
+    try {
+      const c = await api("/api/intake", { body: payload });
+      state.selected = c; state.commsTone = null;
+      renderCase(c); await refreshState(); window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (e) { toast("研判失败：" + e.message, "err"); }
+    finally { btn.disabled = false; btn.textContent = "接入并跑完 6 个 Agent"; }
+  });
+
+  function lvBadge(l) { const m = LV[l] || LV[3]; return `<span class="esi-badge ${m.cls} lg">${l}</span>`; }
+
+  function renderCase(c) {
+    const qc = c.qc || {}; const sc = c.screening || {}; const j = c.judgment || {};
+    const l = c.final_level || c.level || j.level; const m = LV[l] || LV[3];
+    const risks = sc.risks || [];
+
+    const html = [];
+    html.push(`
+      <div class="verdict v${l}">
+        ${lvBadge(l)}
+        <div class="verdict-main">
+          <h1>${escapeHTML(c.name)}　<span class="num" style="font-size:15px;color:var(--ink-3)">${escapeHTML(c.location || "未明确地址")} · ${c.crowd ? c.crowd + " 人" : ""}</span></h1>
+          <div class="sub"><b>${m.label}</b>　处置通道：<b>${escapeHTML(j.route || m.route)}</b></div>
+          <div class="sub" style="margin-top:3px">诉求：${escapeHTML(c.text)}</div>
+        </div>
+        <div class="verdict-side">
+          <div class="mini-stat"><b>${risks.length}</b><span>风险</span></div>
+          <div class="mini-stat"><b class="num">${c.crowd || "—"}</b><span>涉及人数</span></div>
+          <div class="mini-stat" style="max-width:96px"><b style="font-size:12px;color:${qc.conflict ? "var(--red)" : "var(--green)"}">${escapeHTML(qc.verdict || "—")}</b><span>质控</span></div>
+        </div>
+      </div>
+      <div class="jury">
+        ${(qc.jury || []).map((x, i) => `${i === 1 ? '<div class="jury-vs">vs</div>' : ""}
+          <div class="jury-card"><div class="role">${escapeHTML(x.role)}</div>
+          <div class="lv">${x.level} 级</div><div class="arg">${escapeHTML(x.argument).slice(0, 110)}</div></div>`).join("")}
+      </div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-sm btn-primary" data-act="open-comms">生成通报</button>
+        <button class="btn btn-sm" data-act="open-report">模拟市民补充反馈</button>
+        <button class="btn btn-sm" data-act="call-duty">呼叫值班人员</button>
+        <button class="btn btn-sm btn-ghost" data-act="refresh">刷新</button>
+      </div>`);
+
+    html.push(`<div class="pipeline">`);
+    ["intake", "risk", "grade", "qc", "watch", "comms"].forEach((key) => {
+      const a = (c.agents || {})[key];
+      if (!a) return;
+      const open = ["critical", "warn"].includes(a.status) || key === "grade" ? "open" : "";
+      const rich = ["risk", "grade", "qc", "comms"].includes(key);
+      html.push(`
+        <article class="agent st-${a.status} ${open}" data-agent="${key}">
+          <div class="agent-head">
+            <div class="agent-no">${["①","②","③","④","⑤","⑥"][a.no - 1]}</div>
+            <div class="agent-title">
+              <h3>${escapeHTML(a.name)} <span class="status st-${a.status}">${({done:"完成",warn:"需注意",critical:"高危",watching:"追踪中"})[a.status] || a.status}</span>${a.engine === "llm" ? '<span class="pill" style="background:#f5f3ff;border-color:#ddd6fe;color:#6d28d9">⚡大模型</span>' : ""}</h3>
+              <div class="role">${escapeHTML(a.role)} · 置信度 ${a.confidence} · ${a.elapsed_ms}ms</div>
+              <div class="agent-headline">${escapeHTML(a.headline)}</div>
+            </div>
+            <div class="agent-meta">${open ? "" : "▾"}</div>
+          </div>
+          <div class="agent-body">
+            ${rich ? "" : `<ul class="agent-points">${(a.points || []).map((p) => `<li>${escapeHTML(p)}</li>`).join("")}</ul>`}
+            ${renderExtra(key, a.extra, c)}
+          </div>
+        </article>`);
+    });
+    html.push(`</div>`);
+    $("#result").innerHTML = html.join("");
+    renderReportCard(c);
+  }
+
+  function renderExtra(key, extra, c) {
+    extra = extra || {};
+    if (key === "intake") {
+      const rows = (extra.translation || []).slice(0, 8).map((t) => `<tr><td class="lay">「${escapeHTML(t.lay)}」</td><td class="arrow">→</td><td><span class="tag-term">${escapeHTML(t.term)}</span></td></tr>`).join("");
+      const bits = (extra.location_bits || []).join("、");
+      return `<div class="divider"></div>
+        <table class="tbl">${rows || '<tr><td class="muted">未识别到诉求类型</td></tr>'}</table>
+        ${bits ? `<div class="kv" style="margin-top:8px"><span class="k">自动抓取地址</span><span class="v">${escapeHTML(bits)}</span></div>` : ""}
+        ${extra.crowd ? `<div class="kv"><span class="k">涉及人数</span><span class="v">约 ${extra.crowd} 人</span></div>` : ""}
+        ${(extra.missing || []).length ? `<div class="alert amber" style="margin-top:8px">待补：${escapeHTML(extra.missing.join("、"))}</div>` : ""}`;
+    }
+    if (key === "risk") {
+      const risks = (extra.risks || []).map((r) => `
+        <div class="flag-item" style="border-color:${r.tier === 0 ? "var(--red-line)" : "var(--amber-line)"};background:${r.tier === 0 ? "linear-gradient(180deg,#fff,var(--red-bg))" : "linear-gradient(180deg,#fff,var(--amber-bg))"}">
+          <div class="flag-top"><b>${escapeHTML(r.name)}</b>
+            <span class="pill">${r.tier === 0 ? "一级" : "二级"}</span>
+            <span class="pill gray">置信度 ${r.confidence}</span>
+            <span class="pill gray" style="margin-left:auto">${escapeHTML(r.dept)}</span></div>
+          <div class="flag-note"><span class="k">为什么高危：</span>${escapeHTML(r.risky)}</div>
+          <div class="flag-note"><span class="k">时效：</span>${escapeHTML(r.window)}</div>
+          <div class="flag-hits">${(r.hits || []).map((h) => `<span class="pill">${escapeHTML(h)}</span>`).join("")}</div>
+          <div class="flag-note"><span class="k">处置动作：</span>${escapeHTML(r.action)}</div>
+        </div>`).join("");
+      const ask = (extra.ask || []).length ? `<div class="alert amber" style="margin-top:10px"><b>补问清单</b><br>${extra.ask.map((q) => "· " + escapeHTML(q)).join("<br>")}</div>` : "";
+      const cleared = `<div class="small muted" style="margin-top:9px">已排查 ${extra.screened} 类社会风险；未触发：${(extra.cleared || []).slice(0, 8).map(escapeHTML).join("、")}${(extra.cleared || []).length > 8 ? " 等" : ""}</div>`;
+      return `<div class="divider"></div>${risks || '<div class="alert blue">未触发任何高危风险。</div>'}${ask}${cleared}`;
+    }
+    if (key === "grade") {
+      const j = extra.judgment || {};
+      const reasons = (j.reasons || []).map((r) => `<div class="kv"><span class="k">${escapeHTML(r.k)}</span><span class="v" style="font-weight:500">${escapeHTML(r.v)}</span></div>`).join("");
+      return `<div class="divider"></div>${reasons}
+        <div class="alert blue" style="margin-top:8px">处置通道：${escapeHTML(j.route || "")}</div>
+        <div class="small muted" style="margin-top:6px">算法路径：${escapeHTML(j.path || "")} · 响应时限 ${j.sla_minutes === 0 ? "立即" : j.sla_minutes + " 分钟"}</div>`;
+    }
+    if (key === "qc") {
+      const q = extra.qc || {};
+      const checks = (q.checks || []).map((x) => `<div class="kv"><span class="k" style="min-width:110px">${x.level === "critical" ? "🔴" : x.level === "major" ? "🟠" : "⚪"} ${escapeHTML(x.name)}</span><span class="v" style="font-weight:500">${escapeHTML(x.detail)}</span></div>`).join("");
+      return `<div class="divider"></div>${checks || '<div class="alert blue">交叉核验全部通过。</div>'}`;
+    }
+    if (key === "comms") {
+      return `<div class="divider"></div><div id="comms-box">${renderComms(extra.comms || {}, state.commsTone)}</div>`;
+    }
+    return "";
+  }
+
+  function renderComms(c, tone) {
+    const variants = c.variants || [];
+    const active = variants.find((x) => x.tone === (tone || c.tone)) || variants[0] || {};
+    return `
+      <div class="tone-tabs">${variants.map((x) => `<button class="tone-tab ${x.tone === active.tone ? "on" : ""}" data-tone="${x.tone}">${escapeHTML(x.label)}</button>`).join("")}</div>
+      <div class="script" id="script-text">${escapeHTML(active.text || "")}</div>
+      <div class="btn-row" style="margin-top:8px"><button class="btn btn-sm" data-act="copy-script">复制通报</button></div>
+      <div class="rule-list"><b style="color:var(--ink-2)">措辞禁忌</b>${(c.taboos || []).map((t) => `<li>${escapeHTML(t)}</li>`).join("")}</div>`;
+  }
+
+  function renderReportCard(c) {
+    $("#report-card").hidden = false;
+    $("#rp-name").textContent = `${c.name} · ${c.id}`;
+    $("#rp-url").textContent = c.report_url || "";
+    $("#report-card").dataset.url = c.report_url || "";
+  }
+  $("#btn-copy").addEventListener("click", () => copyText($("#report-card").dataset.url || ""));
+  $("#btn-open").addEventListener("click", () => { const u = $("#report-card").dataset.url; if (u) window.open(u, "_blank"); });
+
+  $("#result").addEventListener("click", async (ev) => {
+    const head = ev.target.closest(".agent-head");
+    if (head) { head.parentElement.classList.toggle("open"); return; }
+    const tab = ev.target.closest(".tone-tab");
+    if (tab) {
+      state.commsTone = tab.dataset.tone;
+      const comms = state.selected?.agents?.comms?.extra?.comms || {};
+      $("#comms-box").innerHTML = renderComms(comms, state.commsTone);
+      return;
+    }
+    const act = ev.target.closest("[data-act]")?.dataset.act;
+    if (!act || !state.selected) return;
+    const c = state.selected;
+    if (act === "open-comms") { const el = $('[data-agent="comms"]'); if (el) { el.classList.add("open"); el.scrollIntoView({ behavior: "smooth", block: "center" }); } }
+    else if (act === "open-report") { if (c.report_url) window.open(c.report_url, "_blank"); }
+    else if (act === "call-duty") { try { await api("/api/report/tone", { body: { token: c.token, message: "" } }); } catch {} window.open("/duty", "_blank"); }
+    else if (act === "copy-script") copyText($("#script-text")?.textContent || "");
+    else if (act === "refresh") selectCase(c.id, true);
+  });
+
+  async function refreshState() {
+    try {
+      const s = await api("/api/state");
+      $("#stat-pending").textContent = s.stats.pending;
+      $("#stat-wait").textContent = s.stats.waiting;
+      $("#stat-rules").textContent = s.meta.screened;
+      $("#stat-llm").textContent = s.meta.llm ? "已接入" : "规则兜底";
+      $("#stat-llm").style.color = s.meta.llm ? "#6d28d9" : "";
+      $("#queue-hint").textContent = `待处置 ${s.stats.waiting} · 处置中 ${s.stats.critical}`;
+      $("#queue").innerHTML = s.queue.length ? s.queue.map((q) => `
+        <div class="queue-item ${state.selected && state.selected.id === q.id ? "sel" : ""}" data-id="${q.id}">
+          <span class="esi-badge ${(LV[q.level] || LV[3]).cls}">${q.level ?? "?"}</span>
+          <div class="queue-main">
+            <div class="nm">${escapeHTML(q.name)} <span class="muted small">${escapeHTML(q.location)}</span></div>
+            <div class="cf">${escapeHTML(q.risk || q.text)}</div>
+          </div>
+          <div class="queue-side"><b>${q.stage === "处置中" ? "处置中" : waitText(Math.max(1, q.wait_minutes))}</b>${q.crowd ? q.crowd + " 人" : ""}</div>
+        </div>`).join("") : `<div class="empty"><span class="big">◷</span>暂无待处置诉求</div>`;
+      $("#hitl-hint").textContent = s.stats.pending ? `${s.stats.pending} 待办` : "全部已处理";
+      $("#hitl").innerHTML = s.tickets.length ? s.tickets.map((t) => `
+        <div class="alert ${t.priority === "P0" ? "red" : "amber"}" style="cursor:pointer" data-ticket="${t.id}">
+          <div style="flex:1"><b>${t.priority} · ${escapeHTML(t.subject)}</b>　<span class="small">${escapeHTML(t.reason).slice(0, 44)}</span>
+          <div class="small" style="opacity:.8;margin-top:2px">${t.overdue ? "⏰ 已超 SLA" : "SLA " + t.sla_minutes + " 分钟"} · ${escapeHTML(t.agent)}</div></div>
+          <span class="t">${clockOf(t.created_at)}</span>
+        </div>`).join("") : `<div class="empty"><span class="big">✓</span>没有待处理工单</div>`;
+      if (state.lastPending >= 0 && s.stats.pending > state.lastPending) toast(`新工单：${s.tickets[0]?.reason || ""}`, "err");
+      state.lastPending = s.stats.pending;
+      if (state.selected) {
+        const q = s.queue.find((x) => x.id === state.selected.id);
+        if (q && (q.level !== state.selected.level || q.stage !== state.selected.stage)) selectCase(state.selected.id, true);
+      }
+    } catch (e) { /* 轮询失败静默 */ }
+  }
+
+  async function selectCase(id, quiet = false) {
+    try {
+      const c = await api("/api/case/" + id);
+      state.selected = c; state.commsTone = null; renderCase(c);
+      if (!quiet) $("#result").scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (e) { toast(e.message, "err"); }
+  }
+
+  $("#queue").addEventListener("click", (ev) => { const it = ev.target.closest(".queue-item"); if (it) selectCase(it.dataset.id); });
+  $("#hitl").addEventListener("click", () => window.open("/duty", "_blank"));
+
+  $("#btn-seed").addEventListener("click", async () => {
+    try { const r = await api("/api/demo/seed", { body: {} }); toast(`已填充 ${r.created.length} 条诉求`, "ok"); await refreshState(); }
+    catch (e) { toast(e.message, "err"); }
+  });
+  $("#btn-reset").addEventListener("click", async () => {
+    if (!confirm("清空所有诉求、工单与审计记录？")) return;
+    await api("/api/reset", { body: {} });
+    state.selected = null; state.lastPending = -1; $("#report-card").hidden = true; location.reload();
+  });
+
+  (async () => {
+    await loadCases();
+    const p = new URLSearchParams(location.search);
+    const id = p.get("case");
+    if (id) await selectCase(id, true);
+    else if (p.get("demo")) { const item = document.querySelector(`.case-item[data-key="${p.get("demo")}"]`); if (item) item.click(); }
+  })();
+  refreshState();
+  setInterval(refreshState, 2500);
+})();
+</script>
+</body>
+</html>
